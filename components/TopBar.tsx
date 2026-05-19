@@ -52,10 +52,19 @@ export function TopBar() {
   }
 
   const { title, subtitle } = getPageTitle()
+  const [showMenu, setShowMenu] = useState(false)
+
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Admit Patient', href: '/intake' },
+    { name: 'Alerts & Handoff', href: '/alerts' },
+    { name: 'Active Logs', href: '/log' },
+    { name: 'Trends & Stats', href: '/trends' },
+  ]
 
   return (
     <header 
-      className="h-15 shrink-0 px-6 flex items-center justify-between sticky top-0 z-20 w-full ml-0 md:ml-60 md:w-[calc(100%-15rem)]"
+      className="relative h-15 shrink-0 px-6 flex items-center justify-between sticky top-0 z-20 w-full ml-0 md:ml-60 md:w-[calc(100%-15rem)]"
       style={{
         backgroundColor: '#ffffff'
       }}
@@ -65,9 +74,33 @@ export function TopBar() {
         <button 
           className="md:hidden p-2 -ml-2 rounded-lg transition-colors"
           style={{ color: 'var(--color-on-surface-variant)' }}
+          onClick={() => setShowMenu(prev => !prev)}
+          aria-expanded={showMenu}
+          aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {/* Mobile menu panel */}
+        {showMenu && (
+          <div className="absolute left-4 top-full mt-2 w-64 bg-white rounded-lg p-2 shadow-elevation-lg md:hidden z-40"
+            style={{ border: 'none' }}
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.href}
+                onClick={() => {
+                  setShowMenu(false)
+                  router.push(item.href)
+                }}
+                className="w-full text-left px-3 py-2 rounded-md text-sm font-semibold transition-colors"
+                style={{ color: 'var(--color-on-surface-variant)', background: 'transparent' }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex flex-col">
           <h2 
             className="text-lg font-bold m-0 leading-tight"
