@@ -5,12 +5,23 @@ self.addEventListener('push', (event) => {
     icon: '/icon-192.png',
     badge: '/badge-72.png',
     tag: data.tag ?? 'qmer-notification',
-    renotify: false,
+    renotify: true,
     data: { url: data.url ?? '/alerts' },
     requireInteraction: data.urgency === 'high',
+    silent: false,
     vibrate: data.urgency === 'high' ? [200, 100, 200] : [100],
   };
-  event.waitUntil(self.registration.showNotification(data.title ?? 'QMeR+ Alert', options));
+  event.waitUntil((async () => {
+    await self.registration.showNotification(data.title ?? 'QMeR+ Alert', options);
+
+    const clientsList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clientsList) {
+      client.postMessage({
+        type: 'qmer-push-alert',
+        payload: data,
+      });
+    }
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {

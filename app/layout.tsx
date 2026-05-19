@@ -1,6 +1,7 @@
 import { Plus_Jakarta_Sans, DM_Mono } from 'next/font/google'
 import './globals.css'
 import { ServiceWorkerRegistrar } from '@/components/ServiceWorkerRegistrar'
+import { AlertSignalListener } from '@/components/AlertSignalListener'
 import { AuthProvider } from '@/hooks/useAuth'
 
 const jakarta = Plus_Jakarta_Sans({ 
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="en" className={`${jakarta.variable} ${mono.variable}`}>
       <body className="antialiased bg-(--bg-base)">
         <ServiceWorkerRegistrar />
+        <AlertSignalListener />
         <AuthProvider>
           {children}
         </AuthProvider>
