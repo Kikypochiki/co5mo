@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Card, CardHeader, CardBody } from '@/components/ui/Card'
+import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Stethoscope, LockKeyhole } from 'lucide-react'
 
@@ -33,20 +33,42 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+    <div 
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       <Card className="w-full max-w-md">
         <CardBody className="p-8">
           
           <div className="flex flex-col items-center justify-center mb-8">
-            <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-              <Stethoscope className="w-8 h-8 text-white" />
+            <div 
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-elevation-sm"
+              style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+            >
+              <Stethoscope className="w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 m-0">QMeR+</h1>
-            <p className="text-sm text-slate-500 font-medium m-0 mt-1">Clinical Decision Support System</p>
+            <h1 
+              className="text-2xl font-bold tracking-tight m-0"
+              style={{ color: 'var(--color-on-surface)' }}
+            >
+              QMeR+
+            </h1>
+            <p 
+              className="text-sm font-medium m-0 mt-1"
+              style={{ color: 'var(--color-on-surface-variant)' }}
+            >
+              Clinical Decision Support System
+            </p>
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold p-4 rounded-lg mb-6">
+            <div 
+              className="text-sm font-semibold p-4 rounded-lg mb-6"
+              style={{
+                backgroundColor: 'var(--color-error-container)',
+                color: 'var(--color-on-error-container)'
+              }}
+            >
               {error}
             </div>
           )}
@@ -73,12 +95,22 @@ export default function AuthPage() {
               />
             </div>
 
-            <Button type="submit" variant="primary" loading={loading} className="w-full h-12 text-base mt-4">
+            <Button 
+              type="submit" 
+              variant="primary" 
+              loading={loading} 
+              className="w-full h-12 text-base mt-4"
+            >
               Sign in securely
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+          <div 
+            className="mt-8 pt-6 border-t flex items-center justify-center gap-2 text-xs font-semibold"
+            style={{
+              color: 'var(--color-on-surface-variant)'
+            }}
+          >
             <LockKeyhole className="w-4 h-4" /> Authorized Personnel Only
           </div>
 

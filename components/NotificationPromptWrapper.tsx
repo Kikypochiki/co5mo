@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-// Import removed forcefully to bust cache
 import { Bell, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -21,9 +20,11 @@ export function NotificationPromptWrapper() {
 
   const handleEnable = async () => {
     try {
-      // await registerPushNotifications()
-      setStatus('granted')
-      setShowPrompt(false)
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') {
+        setStatus('granted')
+        setShowPrompt(false)
+      }
     } catch (e) {
       console.error(e)
     }
@@ -42,28 +43,41 @@ export function NotificationPromptWrapper() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between md:justify-center gap-4 z-50 w-full"
+          className="px-4 py-3 flex items-center justify-between md:justify-center gap-4 z-50 w-full"
+          style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
-              <Bell className="w-4 h-4 text-slate-300" />
+            <div 
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              style={{ 
+                backgroundColor: 'var(--color-primary-container)',
+                color: 'var(--color-on-primary-container)'
+              }}
+            >
+              <Bell className="w-4 h-4" />
             </div>
             <div>
               <p className="text-sm font-bold m-0">Enable Clinical Alerts</p>
-              <p className="text-xs text-slate-400 m-0 hidden md:block">Receive critical push notifications for abnormal FHT and urgent handoffs.</p>
+              <p className="text-xs m-0 hidden md:block" style={{ opacity: 0.85 }}>
+                Receive critical push notifications for abnormal FHT and urgent handoffs.
+              </p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 ml-auto md:ml-4">
             <button 
               onClick={handleEnable}
-              className="bg-white text-slate-900 hover:bg-slate-100 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors"
+              className="px-4 py-1.5 rounded-lg text-sm font-bold transition-colors"
+              style={{
+                backgroundColor: 'var(--color-on-primary)',
+                color: 'var(--color-primary)'
+              }}
             >
               Allow
             </button>
             <button 
               onClick={handleDismiss}
-              className="p-1.5 text-slate-400 hover:text-white transition-colors rounded-md"
+              className="p-1.5 transition-opacity rounded-md hover:opacity-75"
             >
               <X className="w-5 h-5" />
             </button>

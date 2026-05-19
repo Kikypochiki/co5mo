@@ -11,44 +11,90 @@ export function PatientCard({ patient }: { patient: Patient }) {
   const isCritical = patient.alert_level === 'Critical'
   const isModerate = patient.alert_level === 'Moderate'
   
-  const statusColor = isCritical ? 'bg-rose-500' : isModerate ? 'bg-amber-500' : 'bg-emerald-500'
+  const getStatusColor = () => {
+    if (isCritical) return 'var(--color-error)'
+    if (isModerate) return 'var(--color-outline)'
+    return 'var(--color-tertiary)'
+  }
 
   return (
-    <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col h-full overflow-hidden">
+    <div 
+      className="relative rounded-2xl hover:shadow-lg transition-all duration-200 flex flex-col h-full overflow-hidden shadow-elevation-sm"
+      style={{
+        backgroundColor: '#ffffff'
+      }}
+    >
       
       {/* Top accent line */}
-      <div className={`absolute top-0 left-0 right-0 h-1 ${statusColor}`} />
+      <div 
+        className="absolute top-0 left-0 right-0 h-1"
+        style={{ backgroundColor: getStatusColor() }}
+      />
 
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 flex items-start justify-between bg-white pt-5">
+      <div 
+        className="p-4 border-b flex items-start justify-between pt-5"
+        style={{
+          backgroundColor: '#ffffff'
+        }}
+      >
         <div className="flex gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-slate-200 bg-slate-50`}>
-            <User className="w-5 h-5 text-slate-400" />
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: '#f4f4f2',
+              color: 'var(--color-on-surface-variant)'
+            }}
+          >
+            <User className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900 m-0 leading-tight">
+            <h3 
+              className="text-base font-bold m-0 leading-tight"
+              style={{ color: 'var(--color-on-surface)' }}
+            >
               {patient.name}
             </h3>
-            <p className="text-xs text-slate-500 font-medium m-0 mt-0.5">
+            <p 
+              className="text-xs font-medium m-0 mt-0.5"
+              style={{ color: 'var(--color-on-surface-variant)' }}
+            >
               {patient.age}y · {patient.gravida_para}
             </p>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Time</span>
-          <span className="text-xs font-mono font-medium text-slate-900">
+          <span 
+            className="text-[10px] font-bold tracking-wider uppercase"
+            style={{ color: 'var(--color-on-surface-variant)' }}
+          >
+            Time
+          </span>
+          <span 
+            className="text-xs font-mono font-medium"
+            style={{ color: 'var(--color-on-surface)' }}
+          >
             {new Date(patient.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
           </span>
         </div>
       </div>
 
       {/* Body */}
-      <div className="p-4 flex-1 bg-slate-50/50 space-y-3">
+      <div 
+        className="p-4 flex-1 space-y-3"
+        style={{ backgroundColor: '#ffffff' }}
+      >
         {/* Clinical Flags */}
         {patient.clinical_flags && patient.clinical_flags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {patient.mode_of_delivery && (
-              <span className="px-2 py-0.5 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-md">
+              <span 
+                className="px-2 py-0.5 text-[10px] font-bold rounded-md"
+                style={{
+                  backgroundColor: '#f4f4f2',
+                  color: 'var(--color-on-surface-variant)'
+                }}
+              >
                 {patient.mode_of_delivery}
               </span>
             )}
@@ -60,23 +106,56 @@ export function PatientCard({ patient }: { patient: Patient }) {
         
         {/* Chief Complaint Quote */}
         {patient.chief_complaint && (
-          <div className="bg-white border border-slate-200 rounded-lg p-3 relative">
-            <span className="absolute -top-2 left-2 bg-white px-1 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Complaint</span>
-            <p className="text-sm text-slate-700 italic m-0 pt-1">"{patient.chief_complaint}"</p>
+          <div 
+            className="rounded-lg p-3 relative"
+            style={{
+              backgroundColor: '#f4f4f2'
+            }}
+          >
+            <span 
+              className="absolute -top-2 left-2 px-1 text-[10px] uppercase font-bold tracking-wider"
+              style={{
+                backgroundColor: '#ffffff',
+                color: 'var(--color-on-surface-variant)'
+              }}
+            >
+              Complaint
+            </span>
+            <p 
+              className="text-sm italic m-0 pt-1"
+              style={{ color: 'var(--color-on-surface)' }}
+            >
+              "{patient.chief_complaint}"
+            </p>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-slate-100 bg-white flex items-center justify-between mt-auto">
+      <div 
+        className="p-3 border-t flex items-center justify-between mt-auto"
+        style={{
+          backgroundColor: '#ffffff'
+        }}
+      >
         <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-xs font-medium text-slate-500">
+          <Clock 
+            className="w-3.5 h-3.5"
+            style={{ color: 'var(--color-on-surface-variant)' }}
+          />
+          <span 
+            className="text-xs font-medium"
+            style={{ color: 'var(--color-on-surface-variant)' }}
+          >
             {patient.updated_at ? formatTimeAgo(patient.updated_at) : 'No assessments'}
           </span>
         </div>
         
-        <Link href={`/patients/${patient.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700">
+        <Link 
+          href={`/patients/${patient.id}`} 
+          className="inline-flex items-center gap-1 text-sm font-semibold"
+          style={{ color: 'var(--color-primary)' }}
+        >
           View Profile <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
