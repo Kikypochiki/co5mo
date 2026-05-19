@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { Bell, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 export function NotificationPromptWrapper() {
   const [showPrompt, setShowPrompt] = useState(false)
   const [status, setStatus] = useState<NotificationPermission>('default')
   const [dismissed, setDismissed] = useState(false)
+  const { subscribeToNotifications } = usePushNotifications()
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -20,10 +22,12 @@ export function NotificationPromptWrapper() {
 
   const handleEnable = async () => {
     try {
-      const permission = await Notification.requestPermission()
-      if (permission === 'granted') {
+      const result = await subscribeToNotifications()
+      if (result.success) {
         setStatus('granted')
         setShowPrompt(false)
+      } else {
+        console.error('Push subscription failed:', result.reason, 'error' in result ? result.error : '')
       }
     } catch (e) {
       console.error(e)

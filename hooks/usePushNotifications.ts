@@ -104,7 +104,9 @@ export function usePushNotifications() {
       setIsSubscribed(true)
       return { success: true }
     } else {
-      return { success: false, reason: 'api_error' }
+      const errorBody = await response.text().catch(() => '')
+      console.error('Push subscription API error:', response.status, errorBody)
+      return { success: false, reason: 'api_error', error: `HTTP ${response.status}: ${errorBody}` }
     }
   }
 
