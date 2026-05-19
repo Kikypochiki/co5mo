@@ -22,64 +22,80 @@ export default function TrendsPage() {
   
   // Local state for checkboxes in protocols
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
+  const [loadingTrends, setLoadingTrends] = useState(true)
 
   useEffect(() => {
-    getTrends().then(data => {
-      if (data) setTrends(data)
-    })
-    // Also fetch recent interventions directly from the interventions table and aggregate
+    let mounted = true
+
     ;(async () => {
       try {
+        // 1) Fetch server-side trends
+        const server = await getTrends()
+        console.debug('[Trends] server response:', server)
+        if (server && mounted) setTrends(server)
+
+        // 2) Fetch recent interventions from Supabase and aggregate
         const thirtyDaysAgo = new Date()
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
         const iso = thirtyDaysAgo.toISOString()
-        const { data: iData, error: iError } = await supabase
-          .from('interventions')
+
+        try {
+          const { data: iData, error: iError } = await supabase
+            .from('interventions')
+            .select('*')
+            .gte('documented_at', iso)
+            .order('documented_at', { ascending: false })
+
+          if (iError) throw iError
+
+          const rows = (iData || []) as Intervention[]
+          console.debug(`[Trends] supabase rows: ${rows.length}`)
+
+          const counts = new Map<string, { count: number; category: string }>()
+          for (const r of rows) {
+            const key = r.action || 'Unknown'
+            const existing = counts.get(key) || { count: 0, category: r.category || 'other' }
+            existing.count += 1
+            if (!existing.category && r.category) existing.category = r.category
+            counts.set(key, existing)
+          }
+
+          const aggregated = Array.from(counts.entries()).map(([action, { count, category }]) => ({ action, count, category }))
+            .sort((a, b) => b.count - a.count)
+
+          console.debug('[Trends] aggregated length:', aggregated.length)
+
+          if (aggregated.length > 0 && mounted) {
+            setTrends(prev => ({
+              ...(prev ?? { avgDelay: 0, interventions: [] }),
+              interventions: aggregated,
+              totalInterventions: rows.length
+            }))
+          } else {
+            console.debug('[Trends] Supabase aggregation empty — keeping server trends')
+          }
+        } catch (err) {
+          console.error('Failed to load interventions for trends (supabase):', err)
+        }
+
+        // 3) Parallel fetch patients + predictions (non-blocking)
+        supabase.from('patients').select('*').eq('is_transferred', false).then(({ data }) => {
+          if (data && mounted) setPatients(data)
+        })
+
+        supabase.from(process.env.NEXT_PUBLIC_SUPABASE_PREDICTIONS_TABLE || 'predictions')
           .select('*')
-          .gte('documented_at', iso)
-          .order('documented_at', { ascending: false })
+          .order('predicted_at', { ascending: false })
+          .then(({ data }) => {
+            if (data && mounted) setPredictions(data as PredictionType[])
+          })
 
-        if (iError) throw iError
-
-        const rows = (iData || []) as Intervention[]
-        const counts = new Map<string, { count: number; category: string }>()
-        for (const r of rows) {
-          const key = r.action || 'Unknown'
-          const existing = counts.get(key) || { count: 0, category: r.category || 'other' }
-          existing.count += 1
-          if (!existing.category && r.category) existing.category = r.category
-          counts.set(key, existing)
-        }
-
-        const aggregated = Array.from(counts.entries()).map(([action, { count, category }]) => ({ action, count, category }))
-          .sort((a, b) => b.count - a.count)
-
-        // Only overwrite the server-provided trends when we actually have aggregated rows
-        if (aggregated.length > 0) {
-          setTrends(prev => ({
-            ...(prev ?? { avgDelay: 0, interventions: [] }),
-            interventions: aggregated,
-            totalInterventions: rows.length
-          }))
-        } else {
-          // keep existing trends (from getTrends) — helpful when local supabase returns no recent rows
-          console.debug('[Trends] Supabase aggregation returned no rows; keeping server trends')
-        }
-      } catch (err) {
-        // ignore - keep server trends fallback
-        console.error('Failed to load interventions for trends:', err)
+      } finally {
+        if (mounted) setLoadingTrends(false)
       }
     })()
-    supabase.from('patients').select('*').eq('is_transferred', false).then(({ data }) => {
-      if (data) setPatients(data)
-    })
-    // Fetch recent predictions stored in Supabase
-    supabase.from(process.env.NEXT_PUBLIC_SUPABASE_PREDICTIONS_TABLE || 'predictions')
-      .select('*')
-      .order('predicted_at', { ascending: false })
-      .then(({ data }) => {
-        if (data) setPredictions(data as PredictionType[])
-      })
+
+    return () => { mounted = false }
   }, [])
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
